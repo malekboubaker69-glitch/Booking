@@ -1,8 +1,10 @@
 import { supabase } from './supabase.js'
 
+// Jeton d'administration stocké localement
 let token: string | null = localStorage.getItem('adminToken');
 
-// ── Init ─────────────────────────────────────────────
+// ── Initialisation ─────────────────────────────────────────────
+// Si un jeton existe, on affiche direct l'admin, sinon l'écran de connexion
 if (token) {
     showAdmin();
 } else {
@@ -10,14 +12,13 @@ if (token) {
     if (loginScreen) loginScreen.style.display = 'flex';
 }
 
-// ── Auth ─────────────────────────────────────────────
+// ── Authentification ─────────────────────────────────────────────
+// Vérification simplifiée pour le mode serverless (à remplacer par Supabase Auth idéalement)
 (window as any).handleLogin = async function (e: Event) {
     e.preventDefault();
     const pwd = (document.getElementById('password') as HTMLInputElement).value;
 
-    // In serverless mode, we use a simple password check for demo
-    // OR ideally use Supabase Auth. For now, matching the original logic with a fixed password
-    const ADMIN_PASSWORD = 'admin123'; // Hardcoded for simplicity if not using Supabase Auth
+    const ADMIN_PASSWORD = 'admin123';
 
     if (pwd === ADMIN_PASSWORD) {
         token = 'simple-admin-token';
@@ -57,7 +58,8 @@ function fmtDate(iso: string) {
         + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-// ── Data ─────────────────────────────────────────────
+// ── Données et Statistiques ─────────────────────────────────────────────
+// Calcule les stats (revenu, réservations, terrains actifs)
 async function loadStats() {
     try {
         const [courtsRes, bookingsRes] = await Promise.all([
@@ -71,6 +73,7 @@ async function loadStats() {
         const bookings = bookingsRes.data || [];
         const confirmed = bookings.filter((b: any) => b.status === 'confirmed');
 
+        // Calcul du revenu total basé sur la durée et le prix/heure
         let revenue = 0;
         confirmed.forEach((b: any) => {
             const price = b.courts?.price_per_hour || 0;
@@ -194,7 +197,7 @@ async function loadBookings() {
     } catch { alert('Erreur réseau'); }
 };
 
-// ── Court Actions ────────────────────────────────────
+// ── Actions sur les Terrains (Ajout/Modif/Désactivation) ───────────────────────────
 (window as any).handleCourtSubmit = async function (e: Event) {
     e.preventDefault();
     const id = (document.getElementById('court-id') as HTMLInputElement).value;
@@ -207,8 +210,10 @@ async function loadBookings() {
     try {
         let res;
         if (id) {
+            // Modification d'un terrain existant
             res = await supabase.from('courts').update(body).eq('id', id);
         } else {
+            // Ajout d'un nouveau terrain
             res = await supabase.from('courts').insert({ ...body, is_active: true });
         }
 

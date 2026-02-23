@@ -1,5 +1,6 @@
--- Function to handle booking with conflict detection
--- This should be run in the Supabase SQL Editor
+-- Fonction PostgreSQL pour gérer la réservation avec détection de conflits
+-- Ce script doit être exécuté dans l'éditeur SQL de Supabase (SQL Editor)
+-- Elle garantit qu'un créneau déjà réservé ne peut pas être remplacé.
 
 CREATE OR REPLACE FUNCTION book_court_v2(
   p_court_id UUID,

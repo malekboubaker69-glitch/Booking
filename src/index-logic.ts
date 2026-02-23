@@ -1,38 +1,43 @@
 import { supabase } from './supabase.js'
 
-// ── State ─────────────────────────────────────────
-let courts: any[] = [];
-let selectedCourtId: string | null = null;
-let selectedSlots = new Set<number>();  // set of hour indices, e.g. {9, 10}
-let bookedSlots = new Set<number>();    // hours already booked for selected date+court
-let selectedDate = '';
+// ── État de l'Application ─────────────────────────────────────────
+let courts: any[] = [];                      // Liste des terrains chargés depuis la DB
+let selectedCourtId: string | null = null;   // ID du terrain actuellement sélectionné
+let selectedSlots = new Set<number>();      // Heures sélectionnées par l'utilisateur (ex: {9, 10})
+let bookedSlots = new Set<number>();        // Heures déjà réservées pour la date et le terrain choisis
+let selectedDate = '';                      // Date sélectionnée pour la réservation
 
-// ── DOM ───────────────────────────────────────────
-const $courtsGrid = document.getElementById('courts-grid') as HTMLElement;
-const $bookingPanel = document.getElementById('booking-panel') as HTMLElement;
-const $bookingsList = document.getElementById('bookings-list') as HTMLElement;
+// ── Éléments du DOM ───────────────────────────────────────────
+const $courtsGrid = document.getElementById('courts-grid') as HTMLElement;   // Grille d'affichage des terrains
+const $bookingPanel = document.getElementById('booking-panel') as HTMLElement; // Panneau de réservation
+const $bookingsList = document.getElementById('bookings-list') as HTMLElement; // Liste des réservations utilisateur
 
-// ── Tabs ──────────────────────────────────────────
+// ── Gestion des Onglets ──────────────────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const b = btn as HTMLElement;
+        // Désactive tous les onglets et sections
         document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+
+        // Active l'onglet cliqué et la section correspondante
         b.classList.add('active');
         const tabId = b.dataset.tab;
         if (tabId) {
             document.getElementById(tabId)?.classList.add('active');
+            // Charge les réservations si on change d'onglet
             if (tabId === 'bookings') loadBookings();
         }
     });
 });
 
-// ── Toast ─────────────────────────────────────────
+// ── Affichage de Notifications (Toast) ──────────────────────────
 function toast(msg: string, type = 'info') {
     const el = document.createElement('div');
     el.className = `toast ${type}`;
     el.textContent = msg;
     document.getElementById('toast-container')?.appendChild(el);
+    // Supprime automatiquement la notification après 4.2 secondes
     setTimeout(() => el.remove(), 4200);
 }
 
@@ -46,7 +51,8 @@ function fmtHour(h: number) {
     return `${String(h).padStart(2, '0')}:00`;
 }
 
-// ── Load Courts ──────────────────────────────────
+// ── Chargement des Terrains ──────────────────────────────────
+// Récupère les terrains actifs depuis la table 'courts' de Supabase
 async function loadCourts() {
     try {
         const { data, error } = await supabase
@@ -61,6 +67,7 @@ async function loadCourts() {
     } catch { toast('Erreur de chargement des terrains', 'error'); }
 }
 
+// Génère le HTML pour les cartes de terrains
 function renderCourts() {
     if (!courts.length) {
         $courtsGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🏗️</div><p>Aucun terrain trouvé</p></div>`;
@@ -167,7 +174,8 @@ function renderBookingPanel() {
     loadSlots();
 };
 
-// ── Load booked slots for selected court+date ─────
+// ── Chargement des créneaux déjà réservés ─────
+// Interroge Supabase pour connaître les réservations existantes pour ce terrain et cette date
 async function loadSlots() {
     bookedSlots.clear();
     try {
@@ -184,7 +192,7 @@ async function loadSlots() {
             const bEnd = new Date(b.end_time);
             const bDate = bStart.toISOString().slice(0, 10);
             if (bDate !== selectedDate) return;
-            // Mark each hour as booked
+            // Marque chaque heure comprise dans la réservation comme occupée
             for (let h = bStart.getHours(); h < bEnd.getHours(); h++) {
                 bookedSlots.add(h);
             }
@@ -194,6 +202,7 @@ async function loadSlots() {
     renderSlots();
 }
 
+// Affiche la grille des heures (8h à 22h)
 function renderSlots() {
     const grid = document.getElementById('slots-grid');
     if (!grid) return;
@@ -244,7 +253,8 @@ function updateSummary() {
     </div>`;
 }
 
-// ── Submit Booking ────────────────────────────────
+// ── Validation et Envoi de la Réservation ────────────────
+// Envoie les données à Supabase en utilisant une fonction RPC pour éviter les conflits
 (window as any).submitBooking = async function () {
     if (selectedSlots.size === 0) return toast('Sélectionnez au moins un créneau', 'error');
 
@@ -257,7 +267,7 @@ function updateSummary() {
     if (!bookerPhone) return toast('Entrez votre numéro de téléphone', 'error');
     if (!/^\\d{8}$/.test(bookerPhone)) return toast('Le numéro doit contenir exactement 8 chiffres', 'error');
 
-    // Save for later
+    // Sauvegarde les infos localement pour les prochaines fois
     localStorage.setItem('bookerName', bookerName);
     localStorage.setItem('bookerPhone', bookerPhone);
 
@@ -267,7 +277,7 @@ function updateSummary() {
 
     const sorted = [...selectedSlots].sort((a, b) => a - b);
 
-    // Group consecutive slots into ranges
+    // Regroupe les créneaux consécutifs en plages horaires (ex: 9h-10h et 10h-11h => 9h-11h)
     const ranges = [];
     let start = sorted[0];
     let end = sorted[0] + 1;
@@ -287,7 +297,8 @@ function updateSummary() {
         const startISO = new Date(`${selectedDate}T${fmtHour(s)}:00`).toISOString();
         const endISO = new Date(`${selectedDate}T${fmtHour(e)}:00`).toISOString();
 
-        // Use RPC for conflict-safe booking
+        // Appel de la procédure SQL stockée 'book_court_v2' sur Supabase
+        // Cette fonction gère la détection de conflit côté serveur
         const { error } = await supabase.rpc('book_court_v2', {
             p_court_id: selectedCourtId,
             p_user_name: bookerName,
