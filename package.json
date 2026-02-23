@@ -4,10 +4,10 @@
   "description": "API de réservation de terrains de sport (Padel/Foot)",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --env-file=.env src/main.ts",
-    "start": "node dist/main.js",
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "server": "tsx watch --env-file=.env src/main.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1"
@@ -15,6 +15,7 @@
   "devDependencies": {
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
-    "@types/node": "^22.13.4"
+    "@types/node": "^22.13.4",
+    "vite": "^6.0.0"
   }
 }
