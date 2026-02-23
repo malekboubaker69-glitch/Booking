@@ -8,7 +8,7 @@ import path from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // ── Static file serving ────────────────────────────────────────
-const PUBLIC_DIR = path.join(import.meta.dirname ?? ".", "..", "public");
+const PUBLIC_DIR = path.join(import.meta.dirname ?? ".", "..");
 
 const MIME_TYPES: Record<string, string> = {
     ".html": "text/html; charset=utf-8",
