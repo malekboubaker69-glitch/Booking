@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sport Booking — Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ── Reuse existing variables ───────────────────────── */
+        :root {
+            /* ── Cloud Dancer 2026 palette ─── */
+            --bg: #f5f3f0;
+            --bg2: #edeae6;
+            --surface: rgba(0, 0, 0, 0.03);
+            --surface-hover: rgba(0, 0, 0, 0.06);
+            --glass: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --glass-border-hover: rgba(0, 0, 0, 0.15);
+            --text: #1a1a2e;
+            --text-muted: #6b6e7a;
+            --text-dim: #a0a3ad;
+            --accent: #5b4a8a;
+            --accent-light: #7b6baa;
+            --accent-glow: rgba(91, 74, 138, 0.2);
+            --padel: #2a9d8f;
+            --padel-bg: rgba(42, 157, 143, 0.1);
+            --padel-border: rgba(42, 157, 143, 0.25);
+            --foot: #c97d3a;
+            --foot-bg: rgba(201, 125, 58, 0.1);
+            --foot-border: rgba(201, 125, 58, 0.25);
+            --danger: #c0392b;
+            --success: #27ae60;
+            --success-bg: rgba(39, 174, 96, 0.1);
+            --radius: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* ── Login Styles ───────────────────────────────────── */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #5b4a8a 0%, #2a9d8f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Admin Layout ───────────────────────────────────── */
+        .admin-app {
+            display: none;
+            /* hidden by default */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+        }
+
+        header {
+            padding: 30px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            padding: 8px 16px;
+            border-radius: 999px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: var(--surface-hover);
+            color: var(--danger);
+        }
+
+        /* ── Dashboard Stats ────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 24px;
+            border-radius: var(--radius);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* ── Courts Management ──────────────────────────────── */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .courts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .admin-court-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .court-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .court-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 1.2rem;
+        }
+
+        .court-icon.padel {
+            background: var(--padel-bg);
+        }
+
+        .court-icon.foot {
+            background: var(--foot-bg);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-icon:hover {
+            background: var(--surface-hover);
+        }
+
+        .btn-icon.delete:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* ── Modal ─────────────────────────────────────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: #fff;
+            padding: 30px;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 500px;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--surface);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Common inputs */
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+        }
+
+        /* ── Bookings Table ────────────────────────────────── */
+        .bookings-table-container {
+            background: #fff;
+            border-radius: var(--radius);
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--surface);
+            text-align: left;
+            padding: 16px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-badge.confirmed {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .status-badge.cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .client-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .client-name {
+            font-weight: 700;
+        }
+
+        .client-phone {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .nav-tab {
+            padding: 10px 0;
+            color: var(--text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Login Screen ─────────────────────────────────── -->
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <div class="login-title">Admin Access</div>
+            <form onsubmit="handleLogin(event)">
+                <input type="password" id="password" class="input-field" placeholder="Mot de passe" required />
+                <button type="submit" class="btn btn-primary" style="width:100%">Se connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Admin Panel ──────────────────────────────────── -->
+    <div id="admin-app" class="admin-app">
+        <header>
+            <div class="logo">⚙️ Admin Panel</div>
+            <button class="logout-btn" onclick="logout()">Déconnexion</button>
+        </header>
+
+        <!-- Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchSection('dashboard')">Tableau de bord</div>
+            <div class="nav-tab" onclick="switchSection('courts')">Terrains</div>
+            <div class="nav-tab" onclick="switchSection('bookings')">Réservations</div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="section-dashboard" class="admin-section active">
+            <div class="stats-grid" id="stats-grid">
+                <!-- populated by js -->
+            </div>
+
+            <div class="section-header">
+                <h2>Réservations Récentes</h2>
+            </div>
+            <div id="recent-bookings-list" class="bookings-table-container">
+                <!-- populated by js -->
+            </div>
+        </div>
+
+        <!-- Courts Section -->
+        <div id="section-courts" class="admin-section">
+            <div class="section-header">
+                <h2>Gestion des Terrains</h2>
+                <button class="btn btn-primary" onclick="openModal()">+ Ajouter un terrain</button>
+            </div>
+            <div id="courts-list" class="courts-list">
+                <!-- populated by js -->
+            </div>
+        </div>
+
+        <!-- Bookings Section -->
+        <div id="section-bookings" class="admin-section">
+            <div class="section-header">
+                <h2>Toutes les Réservations</h2>
+            </div>
+            <div id="all-bookings-list" class="bookings-table-container">
+                <!-- populated by js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal ────────────────────────────────────────── -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <h2 id="modal-title" style="margin-bottom:20px">Ajouter un terrain</h2>
+            <form id="court-form" onsubmit="handleCourtSubmit(event)">
+                <input type="hidden" id="court-id" />
+                <div class="form-group">
+                    <label>Nom du terrain</label>
+                    <input type="text" id="court-name" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label>Sport</label>
+                    <select id="court-sport" class="form-select">
+                        <option value="padel">Padel</option>
+                        <option value="foot">Football</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Prix par heure (DA)</label>
+                    <input type="number" id="court-price" class="form-input" required min="0" />
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn" onclick="closeModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        let token = localStorage.getItem('adminToken');
+
+        // ── Init ─────────────────────────────────────────────
+        if (token) {
+            showAdmin();
+        } else {
+            document.getElementById('login-screen').style.display = 'flex';
+        }
+
+        // ── Auth ─────────────────────────────────────────────
+        async function handleLogin(e) {
+            e.preventDefault();
+            const pwd = document.getElementById('password').value;
+            try {
+                const res = await fetch(`${API}/admin/login`, {
+                    method: 'POST',
+                    body: JSON.stringify({ password: pwd })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    token = data.token;
+                    localStorage.setItem('adminToken', token);
+                    showAdmin();
+                } else {
+                    alert(data.error || 'Erreur');
+                }
+            } catch { alert('Erreur réseau'); }
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            location.reload();
+        }
+
+        function showAdmin() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-app').style.display = 'block';
+            loadStats();
+            loadCourts();
+            loadBookings();
+        }
+
+        function switchSection(id) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+            document.getElementById(`section-${id}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function fmtDate(iso) {
+            const d = new Date(iso);
+            return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ── Data ─────────────────────────────────────────────
+        async function authorizedFetch(url, options = {}) {
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                ...(options.headers || {})
+            };
+            const res = await fetch(url, { ...options, headers });
+            if (res.status === 401) logout();
+            return res;
+        }
+
+        async function loadStats() {
+            try {
+                const res = await authorizedFetch(`${API}/admin/stats`);
+                const stats = await res.json();
+                document.getElementById('stats-grid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${stats.totalRevenue} DA</div>
+                    <div class="stat-label">Revenu Confirmé</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.confirmedBookings}</div>
+                    <div class="stat-label">Réservations Confirmées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.activeCourts} / ${stats.totalCourts}</div>
+                    <div class="stat-label">Terrains Actifs</div>
+                </div>
+            `;
+            } catch { console.error('Error loading stats'); }
+        }
+
+        async function loadCourts() {
+            try {
+                const res = await authorizedFetch(`${API}/admin/courts`);
+                const courts = await res.json();
+                document.getElementById('courts-list').innerHTML = courts.map(c => `
+                <div class="admin-court-card" style="${!c.is_active ? 'opacity:0.6' : ''}">
+                    <div class="court-info">
+                        <div class="court-icon ${c.sport}">${c.sport === 'padel' ? '🏸' : '⚽'}</div>
+                        <div>
+                            <div style="font-weight:700">${c.name} ${!c.is_active ? '(Inactif)' : ''}</div>
+                            <div style="font-size:0.85rem; color:#666">${c.price_per_hour} DA/h</div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-icon" onclick='editCourt(${JSON.stringify(c)})'>✏️</button>
+                        ${c.is_active ?
+                        `<button class="btn-icon delete" onclick="deleteCourt('${c.id}')">🗑️</button>` :
+                        `<button class="btn-icon" onclick="reactivateCourt('${c.id}')">🔄</button>`}
+                    </div>
+                </div>
+            `).join('');
+            } catch { console.error('Error loading courts'); }
+        }
+
+        async function loadBookings() {
+            try {
+                const res = await fetch(`${API}/bookings`);
+                const bookings = await res.json();
+
+                const renderTable = (list) => `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Terrain</th>
+                                <th>Date & Heure</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${list.map(b => `
+                                <tr>
+                                    <td>
+                                        <div class="client-info">
+                                            <span class="client-name">${b.user_name || 'Inconnu'}</span>
+                                            <span class="client-phone">${b.user_phone || 'Pas de tél'}</span>
+                                        </div>
+                                    </td>
+                                    <td>${b.courts?.name || 'Terrain'} (${b.courts?.sport})</td>
+                                    <td>${fmtDate(b.start_time)}</td>
+                                    <td><span class="status-badge ${b.status}">${b.status}</span></td>
+                                    <td>
+                                        ${b.status === 'confirmed' ?
+                        `<button class="btn-icon delete" onclick="cancelBooking('${b.id}')" title="Annuler">✕</button>` :
+                        ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById('all-bookings-list').innerHTML = renderTable(bookings);
+                document.getElementById('recent-bookings-list').innerHTML = renderTable(bookings.slice(0, 5));
+            } catch { console.error('Error loading bookings'); }
+        }
+
+        async function cancelBooking(id) {
+            if (!confirm('Annuler cette réservation ?')) return;
+            try {
+                const res = await fetch(`${API}/bookings/cancel`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ booking_id: id }),
+                });
+                if (res.ok) {
+                    loadBookings();
+                    loadStats();
+                } else {
+                    alert('Erreur lors de l\'annulation');
+                }
+            } catch { alert('Erreur réseau'); }
+        }
+
+        // ── Court Actions ────────────────────────────────────
+        async function handleCourtSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('court-id').value;
+            const name = document.getElementById('court-name').value;
+            const sport = document.getElementById('court-sport').value;
+            const price = Number(document.getElementById('court-price').value);
+
+            const url = id ? `${API}/admin/courts/update` : `${API}/admin/courts`;
+            const body = { name, sport, price_per_hour: price };
+            if (id) body.id = id;
+
+            try {
+                const res = await authorizedFetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify(body)
+                });
+                if (res.ok) {
+                    closeModal();
+                    loadCourts();
+                    loadStats();
+                } else {
+                    alert('Erreur lors de l\'enregistrement');
+                }
+            } catch { alert('Erreur réseau'); }
+        }
+
+        async function deleteCourt(id) {
+            if (!confirm('Désactiver ce terrain ?')) return;
+            try {
+                await authorizedFetch(`${API}/admin/courts/delete`, {
+                    method: 'POST',
+                    body: JSON.stringify({ id })
+                });
+                loadCourts();
+                loadStats();
+            } catch { alert('Erreur'); }
+        }
+
+        async function reactivateCourt(id) {
+            if (!confirm('Réactiver ce terrain ?')) return;
+            try {
+                await authorizedFetch(`${API}/admin/courts/update`, {
+                    method: 'POST',
+                    body: JSON.stringify({ id, is_active: true })
+                });
+                loadCourts();
+                loadStats();
+            } catch { alert('Erreur'); }
+        }
+
+        // ── Modal Logic ──────────────────────────────────────
+        const modal = document.getElementById('modal-overlay');
+
+        function openModal() {
+            document.getElementById('court-form').reset();
+            document.getElementById('court-id').value = '';
+            document.getElementById('modal-title').textContent = 'Ajouter un terrain';
+            modal.classList.add('open');
+        }
+
+        function editCourt(c) {
+            document.getElementById('court-id').value = c.id;
+            document.getElementById('court-name').value = c.name;
+            document.getElementById('court-sport').value = c.sport;
+            document.getElementById('court-price').value = c.price_per_hour;
+            document.getElementById('modal-title').textContent = 'Modifier le terrain';
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+        }
+    </script>
+</body>
+
+</html>

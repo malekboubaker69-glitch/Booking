@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sport Booking — Réservation de terrains</title>
+  <meta name="description" content="Réservez vos terrains de Padel et Football en quelques clics" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ── Reset ──────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* ── Cloud Dancer 2026 palette ─── */
+      --bg: #f5f3f0;
+      --bg2: #edeae6;
+      --surface: rgba(0, 0, 0, 0.03);
+      --surface-hover: rgba(0, 0, 0, 0.06);
+      --glass: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(0, 0, 0, 0.08);
+      --glass-border-hover: rgba(0, 0, 0, 0.15);
+      --text: #1a1a2e;
+      --text-muted: #6b6e7a;
+      --text-dim: #a0a3ad;
+      --accent: #5b4a8a;
+      --accent-light: #7b6baa;
+      --accent-glow: rgba(91, 74, 138, 0.2);
+      --padel: #2a9d8f;
+      --padel-bg: rgba(42, 157, 143, 0.1);
+      --padel-border: rgba(42, 157, 143, 0.25);
+      --foot: #c97d3a;
+      --foot-bg: rgba(201, 125, 58, 0.1);
+      --foot-border: rgba(201, 125, 58, 0.25);
+      --danger: #c0392b;
+      --success: #27ae60;
+      --success-bg: rgba(39, 174, 96, 0.1);
+      --radius: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Scrollbar styling ──────────────────────────────── */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* ── Animated BG ───────────────────────────────────── */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-glow .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.4;
+      animation: orbFloat 18s ease-in-out infinite alternate;
+    }
+
+    .bg-glow .orb:nth-child(1) {
+      width: 500px;
+      height: 500px;
+      top: -10%;
+      left: 10%;
+      background: rgba(91, 74, 138, 0.08);
+    }
+
+    .bg-glow .orb:nth-child(2) {
+      width: 400px;
+      height: 400px;
+      bottom: 10%;
+      right: 5%;
+      background: rgba(42, 157, 143, 0.06);
+      animation-delay: -6s;
+    }
+
+    .bg-glow .orb:nth-child(3) {
+      width: 350px;
+      height: 350px;
+      top: 40%;
+      left: 50%;
+      background: rgba(201, 125, 58, 0.05);
+      animation-delay: -12s;
+    }
+
+    @keyframes orbFloat {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      50% {
+        transform: translate(30px, -40px) scale(1.1);
+      }
+
+      100% {
+        transform: translate(-20px, 20px) scale(0.95);
+      }
+    }
+
+    /* ── Container ─────────────────────────────────────── */
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+
+    /* ── Header ────────────────────────────────────────── */
+    header {
+      padding: 40px 0 12px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #5b4a8a 0%, #2a9d8f 60%, #c97d3a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header .subtitle {
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-size: 0.95rem;
+      font-weight: 400;
+    }
+
+    /* ── Tabs ──────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin: 28px 0 36px;
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      padding: 4px;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .tab-btn {
+      padding: 10px 26px;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 16px var(--accent-glow);
+    }
+
+    /* ── Sections ──────────────────────────────────────── */
+    .section {
+      display: none;
+      animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .section-header .icon {
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 1.3rem;
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+    }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    /* ── Court Cards ───────────────────────────────────── */
+    .courts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 16px;
+    }
+
+    .court-card {
+      position: relative;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 28px 24px 24px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+
+    .court-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      transition: height 0.3s ease;
+    }
+
+    .court-card[data-sport="padel"]::after {
+      background: var(--padel);
+    }
+
+    .court-card[data-sport="foot"]::after {
+      background: var(--foot);
+    }
+
+    .court-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--glass-border-hover);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+    }
+
+    .court-card:hover::after {
+      height: 4px;
+    }
+
+    .court-card.selected {
+      border-color: var(--accent-light);
+      box-shadow: 0 0 0 2px var(--accent), 0 16px 50px var(--accent-glow);
+    }
+
+    .court-card.selected::after {
+      height: 5px;
+      background: var(--accent) !important;
+    }
+
+    .court-sport-icon {
+      font-size: 2rem;
+      margin-bottom: 14px;
+    }
+
+    .court-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .court-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .court-badge.padel {
+      background: var(--padel-bg);
+      color: var(--padel);
+      border: 1px solid var(--padel-border);
+    }
+
+    .court-badge.foot {
+      background: var(--foot-bg);
+      color: var(--foot);
+      border: 1px solid var(--foot-border);
+    }
+
+    .court-price {
+      margin-top: 16px;
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+
+    .court-price .unit {
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+
+    .court-cta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--accent-light);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: all 0.3s ease;
+    }
+
+    .court-card:hover .court-cta {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Booking Panel (appears after court selection) ──── */
+    .booking-panel {
+      margin-top: 28px;
+      background: var(--bg2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .panel-court-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .panel-court-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      font-size: 1.5rem;
+    }
+
+    .panel-court-icon.padel {
+      background: var(--padel-bg);
+      border: 1px solid var(--padel-border);
+    }
+
+    .panel-court-icon.foot {
+      background: var(--foot-bg);
+      border: 1px solid var(--foot-border);
+    }
+
+    .panel-court-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .panel-court-sport {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .panel-close {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .panel-close:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    /* ── Name input ─────────────────────────────────────── */
+    .name-group {
+      margin-bottom: 24px;
+    }
+
+    .name-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+    .name-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px 16px;
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .name-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .name-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    /* ── Date picker row ───────────────────────────────── */
+    .date-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .date-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .date-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+    .date-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .date-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .date-input::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+    }
+
+    /* ── Time Slots Grid ───────────────────────────────── */
+    .slots-section {
+      margin-bottom: 28px;
+    }
+
+    .slots-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 12px;
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+    }
+
+    .slot {
+      padding: 12px 8px;
+      text-align: center;
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      user-select: none;
+    }
+
+    .slot:hover:not(.booked):not(.selected) {
+      border-color: var(--glass-border-hover);
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    .slot.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 12px var(--accent-glow);
+      font-weight: 600;
+    }
+
+    .slot.booked {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: rgba(239, 68, 68, 0.5);
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    .slot .slot-label {
+      font-size: 0.78rem;
+      display: block;
+    }
+
+    .slot .slot-check {
+      display: none;
+    }
+
+    .slot.selected .slot-check {
+      display: inline;
+      margin-left: 4px;
+    }
+
+    /* ── Summary & Book Button ─────────────────────────── */
+    .booking-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      background: var(--success-bg);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .summary-text {
+      font-size: 0.9rem;
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    .summary-detail {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 36px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #5b4a8a, #7b6baa);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      padding: 8px 18px;
+      font-size: 0.82rem;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* ── Bookings List ─────────────────────────────────── */
+    .bookings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .booking-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .booking-card:hover {
+      border-color: var(--glass-border-hover);
+    }
+
+    .booking-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .booking-icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 1.2rem;
+    }
+
+    .booking-icon.padel {
+      background: var(--padel-bg);
+    }
+
+    .booking-icon.foot {
+      background: var(--foot-bg);
+    }
+
+    .booking-info h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .booking-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .booking-time {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .booking-person {
+      font-size: 0.78rem;
+      color: var(--accent-light);
+      font-weight: 500;
+    }
+
+    .booking-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-badge {
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.confirmed {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .status-badge.cancelled {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+
+    .status-badge.completed {
+      background: rgba(107, 114, 128, 0.15);
+      color: var(--text-muted);
+    }
+
+    /* ── Toast ─────────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      padding: 14px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #fff;
+      animation: slideIn 0.35s ease, fadeOut 0.4s ease 3.5s forwards;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+    }
+
+    .toast.success {
+      background: linear-gradient(135deg, rgba(39, 174, 96, 0.95), rgba(42, 157, 143, 0.95));
+    }
+
+    .toast.error {
+      background: linear-gradient(135deg, rgba(192, 57, 43, 0.95), rgba(176, 44, 34, 0.95));
+    }
+
+    .toast.info {
+      background: linear-gradient(135deg, rgba(91, 74, 138, 0.95), rgba(123, 107, 170, 0.95));
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+    }
+
+    /* ── Empty ─────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 0.95rem;
+    }
+
+    /* ── Skeleton ───────────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface-hover) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius);
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    /* ── Admin Link ───────────────────────────────────── */
+    .admin-link {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 100;
+    }
+
+    .admin-link:hover {
+      background: var(--surface-hover);
+      color: var(--accent);
+      border-color: var(--glass-border-hover);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 640px) {
+      .admin-link {
+        top: 10px;
+        right: 15px;
+        font-size: 0.75rem;
+        padding: 6px 12px;
+      }
+
+      .logo {
+        font-size: 1.8rem;
+      }
+
+      .booking-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .booking-right {
+        align-self: flex-end;
+      }
+
+      .booking-panel {
+        padding: 24px 18px;
+      }
+
+      .slots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-glow">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+  </div>
+
+  <div class="app" style="position: relative;">
+    <a href="admin.html" class="admin-link">
+      <span>🔑</span> Admin
+    </a>
+    <header>
+      <div class="logo">🏟️ Sport Booking</div>
+      <p class="subtitle">Réservez vos terrains de Padel & Football en quelques clics</p>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="courts">🏟️ Terrains</button>
+      <button class="tab-btn" data-tab="bookings">📋 Réservations</button>
+    </nav>
+
+    <!-- ── Courts + Inline Booking ────────────────────── -->
+    <section id="courts" class="section active">
+      <div class="section-header">
+        <div class="icon">🏸</div>
+        <h2>Terrains disponibles</h2>
+      </div>
+      <div id="courts-grid" class="courts-grid">
+        <div class="skeleton" style="height:180px"></div>
+        <div class="skeleton" style="height:180px"></div>
+        <div class="skeleton" style="height:180px"></div>
+        <div class="skeleton" style="height:180px"></div>
+      </div>
+      <div id="booking-panel"></div>
+    </section>
+
+    <!-- ── Bookings ───────────────────────────────────── -->
+    <section id="bookings" class="section">
+      <div class="section-header">
+        <div class="icon">📋</div>
+        <h2>Toutes les Réservations</h2>
+      </div>
+      <div id="bookings-list" class="bookings-list">
+        <div class="skeleton" style="height:80px"></div>
+        <div class="skeleton" style="height:80px"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    const API = '';
+
+    // ── State ─────────────────────────────────────────
+    let courts = [];
+    let selectedCourtId = null;
+    let selectedSlots = new Set();  // set of hour indices, e.g. {9, 10}
+    let bookedSlots = new Set();    // hours already booked for selected date+court
+    let selectedDate = '';
+
+    // ── DOM ───────────────────────────────────────────
+    const $courtsGrid = document.getElementById('courts-grid');
+    const $bookingPanel = document.getElementById('booking-panel');
+    const $bookingsList = document.getElementById('bookings-list');
+
+    // ── Tabs ──────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+        if (btn.dataset.tab === 'bookings') loadBookings();
+      });
+    });
+
+    // ── Toast ─────────────────────────────────────────
+    function toast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = msg;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => el.remove(), 4200);
+    }
+
+    // ── Format ────────────────────────────────────────
+    function fmtDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
+        + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+    function fmtHour(h) {
+      return `${String(h).padStart(2, '0')}:00`;
+    }
+
+    // ── Load Courts ──────────────────────────────────
+    async function loadCourts() {
+      try {
+        const res = await fetch(`${API}/courts`);
+        courts = await res.json();
+        renderCourts();
+      } catch { toast('Erreur de chargement des terrains', 'error'); }
+    }
+
+    function renderCourts() {
+      if (!courts.length) {
+        $courtsGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🏗️</div><p>Aucun terrain trouvé — avez-vous exécuté la migration SQL ?</p></div>`;
+        return;
+      }
+      $courtsGrid.innerHTML = courts.map(c => `
+        <div class="court-card ${selectedCourtId === c.id ? 'selected' : ''}"
+             data-id="${c.id}" data-sport="${c.sport}"
+             onclick="selectCourt('${c.id}')">
+          <div class="court-sport-icon">${c.sport === 'padel' ? '🏸' : '⚽'}</div>
+          <div class="court-name">${c.name}</div>
+          <span class="court-badge ${c.sport}">${c.sport}</span>
+          <div class="court-price">${c.price_per_hour} DA<span class="unit">/heure</span></div>
+          <div class="court-cta">Cliquer pour réserver →</div>
+        </div>
+      `).join('');
+    }
+
+    // ── Select Court → show booking panel ─────────────
+    function selectCourt(id) {
+      selectedCourtId = id;
+      selectedSlots.clear();
+      renderCourts();
+      renderBookingPanel();
+      // Scroll to panel
+      setTimeout(() => $bookingPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    }
+
+    function closePanel() {
+      selectedCourtId = null;
+      selectedSlots.clear();
+      $bookingPanel.innerHTML = '';
+      renderCourts();
+    }
+
+    function renderBookingPanel() {
+      const court = courts.find(c => c.id === selectedCourtId);
+      if (!court) { $bookingPanel.innerHTML = ''; return; }
+
+      // Default date = today
+      if (!selectedDate) {
+        const today = new Date();
+        selectedDate = today.toISOString().slice(0, 10);
+      }
+
+      $bookingPanel.innerHTML = `
+        <div class="booking-panel">
+          <div class="panel-header">
+            <div class="panel-court-info">
+              <div class="panel-court-icon ${court.sport}">${court.sport === 'padel' ? '🏸' : '⚽'}</div>
+              <div>
+                <div class="panel-court-name">${court.name}</div>
+                <div class="panel-court-sport">${court.sport === 'padel' ? 'Padel' : 'Football'} — ${court.price_per_hour} DA/h</div>
+              </div>
+            </div>
+            <button class="panel-close" onclick="closePanel()">✕</button>
+          </div>
+
+          <div class="name-group">
+            <label>👤 Nom du réservant</label>
+            <input class="name-input" id="booker-name" type="text"
+                   placeholder="Votre nom complet…"
+                   value="${localStorage.getItem('bookerName') || ''}" />
+          </div>
+
+          <div class="name-group">
+            <label>📞 Numéro de téléphone (8 chiffres)</label>
+            <input class="name-input" id="booker-phone" type="tel"
+                   placeholder="05 / 06 / 07..."
+                   pattern="\d{8}"
+                   maxlength="8"
+                   value="${localStorage.getItem('bookerPhone') || ''}" />
+          </div>
+
+          <div class="date-row">
+            <div class="date-group">
+              <label>📅 Date</label>
+              <input class="date-input" id="slot-date" type="date"
+                     value="${selectedDate}"
+                     min="${new Date().toISOString().slice(0, 10)}"
+                     onchange="onDateChange(this.value)" />
+            </div>
+          </div>
+
+          <div class="slots-section">
+            <div class="slots-label">⏰ Choisissez vos créneaux (cliquez pour cocher)</div>
+            <div class="slots-grid" id="slots-grid"></div>
+          </div>
+
+          <div id="booking-summary"></div>
+
+          <button class="btn btn-primary" id="book-btn" onclick="submitBooking()">
+            Confirmer la réservation
+          </button>
+        </div>
+      `;
+
+      loadSlots();
+    }
+
+    function onDateChange(val) {
+      selectedDate = val;
+      selectedSlots.clear();
+      loadSlots();
+    }
+
+    // ── Load booked slots for selected court+date ─────
+    async function loadSlots() {
+      bookedSlots.clear();
+      try {
+        const res = await fetch(`${API}/bookings`);
+        const bookings = await res.json();
+
+        // Filter bookings for this court + date + not cancelled
+        bookings.forEach(b => {
+          if (b.court_id !== selectedCourtId) return;
+          if (b.status === 'cancelled') return;
+          const bStart = new Date(b.start_time);
+          const bEnd = new Date(b.end_time);
+          const bDate = bStart.toISOString().slice(0, 10);
+          if (bDate !== selectedDate) return;
+          // Mark each hour as booked
+          for (let h = bStart.getHours(); h < bEnd.getHours(); h++) {
+            bookedSlots.add(h);
+          }
+        });
+      } catch (e) { /* silent */ }
+
+      renderSlots();
+    }
+
+    function renderSlots() {
+      const grid = document.getElementById('slots-grid');
+      if (!grid) return;
+
+      let html = '';
+      for (let h = 8; h <= 22; h++) {
+        const isBooked = bookedSlots.has(h);
+        const isSelected = selectedSlots.has(h);
+        const cls = isBooked ? 'slot booked' : (isSelected ? 'slot selected' : 'slot');
+        html += `
+          <div class="${cls}" onclick="${isBooked ? '' : `toggleSlot(${h})`}">
+            <span class="slot-label">${fmtHour(h)} - ${fmtHour(h + 1)}</span>
+            <span class="slot-check">✓</span>
+          </div>`;
+      }
+      grid.innerHTML = html;
+      updateSummary();
+    }
+
+    function toggleSlot(h) {
+      if (selectedSlots.has(h)) {
+        selectedSlots.delete(h);
+      } else {
+        selectedSlots.add(h);
+      }
+      renderSlots();
+    }
+
+    function updateSummary() {
+      const sumDiv = document.getElementById('booking-summary');
+      if (!sumDiv) return;
+
+      if (selectedSlots.size === 0) {
+        sumDiv.innerHTML = '';
+        return;
+      }
+
+      const court = courts.find(c => c.id === selectedCourtId);
+      const sorted = [...selectedSlots].sort((a, b) => a - b);
+      const total = selectedSlots.size * (court?.price_per_hour || 0);
+
+      sumDiv.innerHTML = `
+        <div class="booking-summary">
+          <div>
+            <div class="summary-text">✅ ${selectedSlots.size} créneau(x) sélectionné(s)</div>
+            <div class="summary-detail">${sorted.map(h => `${fmtHour(h)}-${fmtHour(h + 1)}`).join(', ')} — Total: ${total} DA</div>
+          </div>
+        </div>`;
+    }
+
+    // ── Submit Booking ────────────────────────────────
+    async function submitBooking() {
+      if (selectedSlots.size === 0) return toast('Sélectionnez au moins un créneau', 'error');
+
+      const nameInput = document.getElementById('booker-name');
+      const phoneInput = document.getElementById('booker-phone');
+      const bookerName = nameInput?.value.trim();
+      const bookerPhone = phoneInput?.value.trim();
+
+      if (!bookerName) return toast('Entrez votre nom', 'error');
+      if (!bookerPhone) return toast('Entrez votre numéro de téléphone', 'error');
+      if (!/^\d{8}$/.test(bookerPhone)) return toast('Le numéro doit contenir exactement 8 chiffres', 'error');
+
+      // Save for later
+      localStorage.setItem('bookerName', bookerName);
+      localStorage.setItem('bookerPhone', bookerPhone);
+
+      const btn = document.getElementById('book-btn');
+      btn.disabled = true;
+      btn.textContent = 'Réservation en cours…';
+
+      const sorted = [...selectedSlots].sort((a, b) => a - b);
+
+      // Group consecutive slots into ranges
+      const ranges = [];
+      let start = sorted[0];
+      let end = sorted[0] + 1;
+      for (let i = 1; i < sorted.length; i++) {
+        if (sorted[i] === end) {
+          end = sorted[i] + 1;
+        } else {
+          ranges.push([start, end]);
+          start = sorted[i];
+          end = sorted[i] + 1;
+        }
+      }
+      ranges.push([start, end]);
+
+      let allOk = true;
+      for (const [s, e] of ranges) {
+        const startISO = new Date(`${selectedDate}T${fmtHour(s)}:00`).toISOString();
+        const endISO = new Date(`${selectedDate}T${fmtHour(e)}:00`).toISOString();
+
+        try {
+          const res = await fetch(`${API}/bookings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              court_id: selectedCourtId,
+              user_name: bookerName,
+              user_phone: bookerPhone,
+              start_time: startISO,
+              end_time: endISO,
+            }),
+          });
+          if (res.status === 409) {
+            toast(`⚠️ Créneau ${fmtHour(s)}-${fmtHour(e)} déjà réservé`, 'error');
+            allOk = false;
+          } else if (!res.ok) {
+            const d = await res.json();
+            toast(d.error || 'Erreur', 'error');
+            allOk = false;
+          }
+        } catch { toast('Erreur réseau', 'error'); allOk = false; }
+      }
+
+      if (allOk) {
+        toast('✅ Réservation confirmée !', 'success');
+        selectedSlots.clear();
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Confirmer la réservation';
+      loadSlots();
+    }
+
+    // ── Load Bookings ─────────────────────────────────
+    async function loadBookings() {
+      try {
+        const res = await fetch(`${API}/bookings`);
+        const bookings = await res.json();
+        renderBookings(bookings);
+      } catch { toast('Erreur de chargement', 'error'); }
+    }
+
+    function renderBookings(bookings) {
+      if (!bookings.length) {
+        $bookingsList.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>Aucune réservation pour le moment</p></div>`;
+        return;
+      }
+      $bookingsList.innerHTML = bookings.map(b => {
+        const sport = b.courts?.sport ?? '';
+        return `
+        <div class="booking-card">
+          <div class="booking-left">
+            <div class="booking-icon ${sport}">${sport === 'padel' ? '🏸' : '⚽'}</div>
+            <div class="booking-info">
+              <h3>${b.courts?.name ?? 'Terrain'}</h3>
+              <div class="booking-meta">
+                <span class="booking-time">🕐 ${fmtDate(b.start_time)} → ${fmtDate(b.end_time)}</span>
+                ${b.user_name ? `<span class="booking-person">👤 ${b.user_name}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="booking-right">
+            <span class="status-badge ${b.status}">${b.status}</span>
+            ${b.status === 'confirmed' ? `<button class="btn btn-danger" onclick="cancelBooking('${b.id}')">Annuler</button>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Cancel Booking ────────────────────────────────
+    async function cancelBooking(id) {
+      if (!confirm('Annuler cette réservation ?')) return;
+      try {
+        const res = await fetch(`${API}/bookings/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ booking_id: id }),
+        });
+        if (res.ok) { toast('Réservation annulée', 'info'); loadBookings(); }
+        else { const d = await res.json(); toast(d.error || 'Erreur', 'error'); }
+      } catch { toast('Erreur réseau', 'error'); }
+    }
+
+    // ── Init ──────────────────────────────────────────
+    loadCourts();
+  </script>
+</body>
+
+</html>
